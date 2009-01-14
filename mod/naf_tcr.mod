@@ -46,7 +46,6 @@ BREAKPOINT {
 	df = v - ena
 }
 INITIAL { 
-	shift_mnaf = shift_mnaf_init + shift_mnaf_run
 	settables( v )
 	m = minf
 	m = 0
@@ -64,6 +63,7 @@ PROCEDURE settables(v1(mV)) {
 
 	TABLE minf, hinf, mtau, htau  FROM -120 TO 40 WITH 641
 
+	shift_mnaf = shift_mnaf_init + shift_mnaf_run
 	minf  = 1 / ( 1 + exp( ( - ( v1 + shift_mnaf ) - 38 ) / 10 ) )
 	if( ( v1 + shift_mnaf ) < -30.0 ) {
 		mtau = 0.025 + 0.14 * exp( ( ( v1 + shift_mnaf ) + 30 ) / 10 )
