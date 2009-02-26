@@ -32,7 +32,7 @@ NEURON {
 	NONSPECIFIC_CURRENT i
 
 	RANGE g
-	GLOBAL total, near_unity
+	GLOBAL near_unity
 }
 
 UNITS {
@@ -52,7 +52,6 @@ ASSIGNED {
 	i (nA)
 	g (uS)
 	factor
-	total (uS)
 	tau1 (ms)
 }
 
@@ -63,7 +62,6 @@ STATE {
 
 INITIAL {
 	LOCAL tp
-	total = 0
 	tau1 = near_unity * tau2
 	A = 0
 	B = 0
@@ -84,7 +82,6 @@ DERIVATIVE state {
 }
 
 NET_RECEIVE(weight (uS)) {
-	state_discontinuity(A, A + weight*factor)
-	state_discontinuity(B, B + weight*factor)
-	total = total+weight
+	A = A + weight*factor
+	B = B + weight*factor
 }

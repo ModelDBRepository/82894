@@ -85,6 +85,9 @@ obfunc groucho_gapbld() {localobj used
                 }else{
                         used.x[i][j] = 1
                 }
+		if (one_tenth_ncell) {
+			not_unique = 0
+		}
   }
 	    } // while replaces if (not_unique.eq.1) goto 2
 

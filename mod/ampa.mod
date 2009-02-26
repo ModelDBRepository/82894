@@ -53,7 +53,7 @@ NEURON {
 	NONSPECIFIC_CURRENT i
 
 	RANGE g
-	GLOBAL total, near_unity, gfac
+	GLOBAL near_unity, gfac
 
 :for network debugging 
 :	USEION ampa1 WRITE iampa1 VALENCE 0
@@ -79,7 +79,6 @@ ASSIGNED {
 	i (nA)
 	g (uS)
 	factor
-	total (uS)
 	tau1 (ms)
 
 :	iampa1 (nA)
@@ -97,7 +96,6 @@ STATE {
 
 INITIAL {
 	LOCAL tp
-	total = 0
 	tau1 = near_unity * tau
 	A = 0
 	B = 0
@@ -128,5 +126,4 @@ DERIVATIVE state {
 NET_RECEIVE(weight (uS)) {
 	A = A + weight*factor
 	B = B + weight*factor
-	total = total+weight
 }

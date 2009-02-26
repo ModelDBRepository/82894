@@ -43,7 +43,10 @@ NEURON {
 VERBATIM
 #include <stdlib.h>
 #include <math.h>
-/* #include <values.h> /* contains MAXLONG */
+
+#if 0
+#include <values.h> /* contains MAXLONG */
+#endif
 
 /* Michael Hines fix for cygwin on mswin */
 #if !defined(MAXLONG)

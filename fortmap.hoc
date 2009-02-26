@@ -1,4 +1,4 @@
-objref type_vinit, vgaba
+objref type_vinit, vgaba, typename[14]
 type_vinit = new Vector(14)
 vgaba = new Vector(14)
 
@@ -6,7 +6,9 @@ vgaba = new Vector(14)
 //cell.type() returns this value. Note that the table order is below is the
 //same as the base order in groucho.hoc
 for i=0, 13 {
-	j = fscan() type_vinit.x[j] = fscan()  vgaba.x[j] = fscan()
+	j = fscan()
+	typename[j] = new String() getstr(typename[j].s, 1)
+	type_vinit.x[j] = fscan()  vgaba.x[j] = fscan()
 }
 
 suppyrRS_template.hoc:  rank = 0  suppyrRS    -70 -81

@@ -103,7 +103,7 @@ proc traubexact_coef() { local i, j, id, ip, ic, gp, gc, jc, x localobj dtopol, 
 	dtopol = new Vector($o2.nrow)
 	for ic = 2, $o2.nrow-1 $o1.comp[ic] {
 		ip = $o3.x[ic]
-		gp = $o2.x[ip][ic]
+		gp = $o2.getval(ip,ic)
 		if (parent_connection() == 0.5) {
 			rold = ri(0.5)
 			scale_connection_coef(0.5, rold*gp)
@@ -128,11 +128,14 @@ proc traubexact_coef() { local i, j, id, ip, ic, gp, gc, jc, x localobj dtopol, 
 		dindx.insrt(0, ip)		
 		// the delta conductance matrix
 		dmat = new Matrix(dindx.size, dindx.size)
+		if (dindx.size < 3) {
+			execerror("not a delta", 0)
+		}
 		for i = 0, dindx.size-1 {
 			ic = dindx.x[i]
 			for j = i, dindx.size-1 {
 				jc = dindx.x[j]
-				dmat.x[i][j] = $o2.x[ic][jc]
+				dmat.x[i][j] = $o2.getval(ic,jc)
 				dmat.x[j][i] = dmat.x[i][j]
 			}
 		}

@@ -1,4 +1,5 @@
 load_file("nrngui.hoc")
+load_file("hoc/defvar.hoc")
 load_file("hoc/traubcon.hoc")
 load_file("fortmap.hoc")
 load_file("cell_templates.hoc")

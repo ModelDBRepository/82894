@@ -917,11 +917,11 @@ func type() {return       12 }
        insert ka
        gbar_ka =   0.03
        insert km
-       gbar_km =   0.0005
+       gbar_km =   0 // 0.0005
        insert k2
        gbar_k2 =   0.002
        insert kahp_slower
-       gbar_kahp_slower =   5.E-05
+       gbar_kahp_slower =   0 // 5.E-05
        insert cal
        gbar_cal =   0.0005
        insert cat
@@ -946,11 +946,11 @@ func type() {return       12 }
        insert ka
        gbar_ka =   0.03
        insert km
-       gbar_km =   0.0005
+       gbar_km =   0 // 0.0005
        insert k2
        gbar_k2 =   0.002
        insert kahp_slower
-       gbar_kahp_slower =   5.E-05
+       gbar_kahp_slower =   0 // 5.E-05
        insert cal
        gbar_cal =   0.0005
        insert cat
@@ -973,11 +973,11 @@ func type() {return       12 }
        insert ka
        gbar_ka =   0.001
        insert km
-       gbar_km =   0.0005
+       gbar_km =   0 // 0.0005
        insert k2
        gbar_k2 =   0.002
        insert kahp_slower
-       gbar_kahp_slower =   5.E-05
+       gbar_kahp_slower =   0 // 5.E-05
        insert cal
        gbar_cal =   0.00025
        insert cat
@@ -1000,11 +1000,11 @@ func type() {return       12 }
        insert ka
        gbar_ka =   0.001
        insert km
-       gbar_km =   0.0005
+       gbar_km =   0 // 0.0005
        insert k2
        gbar_k2 =   0.002
        insert kahp_slower
-       gbar_kahp_slower =   5.E-05
+       gbar_kahp_slower =   0 // 5.E-05
        insert cal
        gbar_cal =   0.00025
        insert cat

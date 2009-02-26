@@ -32,7 +32,7 @@ PARAMETER {
 	e = 0	(mV)
 	weight = 2.5e-8 (uS)	: example conductance scale from Traub 2005 et al
 			 	: gNMDA_suppyrRS_to_suppyrRS (double check units)
-	NMDA_saturation_fact=1e10 (1) : 80e0 (1) : this saturation factor is multiplied into
+	NMDA_saturation_fact= 80e0 (1) : this saturation factor is multiplied into
 		: the conductance scale, weight, for testing against the
 		: instantaneous conductance, to see if it should be limited.
 : FORTRAN nmda subroutine constants and variables here end with underbar 

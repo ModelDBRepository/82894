@@ -45,6 +45,9 @@ VERBATIM {
 		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
 	}
 	/*printf("%g %g\n", NODEA(nd), NODEB(nd));*/
+#if defined(t)
+	_nt = nd->_nt;
+#endif
 	NODEA(nd) *= _lfactor;
 	NODEB(nd) *= _lfactor;
 }

@@ -35,6 +35,23 @@ Original comments in FORTRAN are retained as hoc comments
 	num_TCR = 100
 	num_nRT = 100
 
+if (one_tenth_ncell) {
+        num_suppyrRS /= 10
+	num_suppyrFRB /= 10
+ 	num_supbask /= 10
+	num_supaxax /= 10
+	num_supLTS /= 10
+	num_spinstell /= 10
+	num_tuftIB /= 10
+	num_tuftRS /= 10
+	num_nontuftRS /= 10
+	num_deepbask /= 10
+	num_deepaxax /= 10
+	num_deepLTS /= 10
+	num_TCR /= 10
+	num_nRT /= 10
+}
+
 //     num_spinstell = 240, num_tuftIB = 500, num_tuftRS = 500,
 //    Diego unsure how many tuftRS there are
 
@@ -2609,7 +2626,7 @@ Original comments in FORTRAN are retained as hoc comments
 // this seems like a good place to create the cells as they
 // will then have corresponding quantities to the above
 
-// load_file("cell_templates.hoc")
+// localloadfile("cell_templates.hoc")
 
 objref suppyrRS_[  num_suppyrRS+1]
 objref suppyrFRB_[ num_suppyrFRB+1]
@@ -2698,7 +2715,7 @@ for i=1, num_suppyrFRB {
    } else {
        par_create("cell_append(new suppyrFRB(), 0, 0, increment_spacer())")
    }
-10    base_ = base_ + 1
+   base_ = base_ + 1
 }
 
 if (pmesg) print "creating ",num_supbask,"supbask cells"
@@ -3466,9 +3483,9 @@ nRT_presyn_comp =         59
 	// of sample settings in the called subroutines below:
 	// in the FORTRAN code it represents the (mpi) rank of the process.
 
-{load_file("durand.hoc")}
-{load_file("synaptic_map_construct.hoc")}
-{load_file("synaptic_compmap_construct.hoc")}
+{localloadfile("durand.hoc")}
+{localloadfile("synaptic_map_construct.hoc")}
+{localloadfile("synaptic_compmap_construct.hoc")}
 
 if (pmesg)	print "Constructing suppyrRS_to_suppyrRS maps"
 // E:
@@ -4758,8 +4775,8 @@ if (pmesg)           print "Construct gap-junction tables"
 
 // end special case.
 
-	{load_file("groucho_gapbld.hoc")}
-	{load_file("groucho_gapbld_mix.hoc")}
+	{localloadfile("groucho_gapbld.hoc")}
+	{localloadfile("groucho_gapbld_mix.hoc")}
 
       gjtable_suppyrRS = groucho_gapbld (thisno, num_suppyrRS, \
       totaxgj_suppyrRS  ,  \
@@ -5204,7 +5221,7 @@ if (pmesg)	print "  of some cell types."
 	set_const_curr_inj(spinstell_base, num_spinstell, curr_spinstell)
 
        ranvec_tuftIB   = durand(seed,num_tuftIB+1   ,ranvec_tuftIB   )
-	curr_tuftIB    =ranvec_tuftIB   .mul( 0.1e0).add(0.00e0).c
+	curr_tuftIB    =ranvec_tuftIB   .mul( 0.1e0).add(awake*1.00e0).c
 //       curr_tuftIB    (1,L) = 0.10e0 + 0.1e0 *
 //       curr_tuftIB    (1,L) = -1.00e0 + 0.1e0 * // ? suppress intrinsic bursting
 //       curr_tuftIB    (1,L) = 1.00e0 + 0.1e0 *  //  ? wake up cortex ?
@@ -5212,7 +5229,7 @@ if (pmesg)	print "  of some cell types."
 
 
        ranvec_tuftRS   = durand(seed,num_tuftRS+1   ,ranvec_tuftRS   )
-	curr_tuftRS    =ranvec_tuftRS   .mul( 0.1e0).add(0.00e0).c
+	curr_tuftRS    =ranvec_tuftRS   .mul( 0.1e0).add(awake*1.00e0).c
 //       curr_tuftRS    (1,L) = 0.10e0 + 0.1e0 *
 //       curr_tuftRS    (1,L) = 1.00e0 + 0.1e0 *  //  ? wake up cortex?
 	set_const_curr_inj(tuftRS_base, num_tuftRS, curr_tuftRS)
@@ -5226,7 +5243,7 @@ if (pmesg)	print "  of some cell types."
 //        ",  ranvec_suppyrFRB(postsyn_cell_num) = ", ranvec_suppyrFRB(postsyn_cell_num)
 
        ranvec_nontuftRS = durand(seed,num_nontuftRS+1 ,ranvec_nontuftRS )
-	curr_nontuftRS  =ranvec_nontuftRS .mul( 0.1e0).add(0.00e0).c
+	curr_nontuftRS  =ranvec_nontuftRS .mul( 0.1e0).add(awake*0.75e0).c
 //       curr_nontuftRS  (1,postsyn_cell_num) = 0.75e0 + 0.1e0 *  // ? wake up cortex
 	set_const_curr_inj(nontuftRS_base, num_nontuftRS, curr_nontuftRS)
 
@@ -5679,7 +5696,7 @@ if (pmesg)	print "Completed adding constant random current injections."
 if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synapses"
 
 	threshold = 0 // mV threshold for presynaptic cell - triggers a spike
-	default_delay = 0.05 // .05 ms is the approx. average delay for a spike if the syn conductances
+//	default_delay = 0.05 // .05 ms is the approx. average delay for a spike if the syn conductances
 		     // are only updated every 0.1 ms (rough average of 0.1 and 0.002)
 	delay = default_delay // used to start setting values
 	ampa_weight = gAMPA_suppyrRS_to_suppyrRS
@@ -5705,6 +5722,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_suppyrRS
@@ -5736,6 +5754,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_suppyrRS
@@ -5765,6 +5784,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supbask_to_suppyrRS
@@ -5782,13 +5802,14 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 // GABA_A
 
 	gaba_weight = gGABA_supaxax_to_suppyrRS
-	for postsyn_cell_num = 1, num_suppyrRS if (gidexist(suppyrRS_base+postsyn_cell_num)) if (gidexist(suppyrRS_base+postsyn_cell_num)) { // loop over postsynaptic cells, postsyn_cell_num
+	for postsyn_cell_num = 1, num_suppyrRS if (gidexist(suppyrRS_base+postsyn_cell_num)) { // loop over postsynaptic cells, postsyn_cell_num
 	  for i = 1, num_supaxax_to_suppyrRS { // ith synapse on postsyn_cell_num
 	    j = map_supaxax_to_suppyrRS.x(i,postsyn_cell_num) // j = presynaptic cell for ith syn to postsyn_cell_num
 	    k = com_supaxax_to_suppyrRS.x(i,postsyn_cell_num) // k = compart. # in postsyn_cell_num for postsyn_cell_num's ith synapse
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supaxax_to_suppyrRS
@@ -5816,6 +5837,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_suppyrRS
@@ -5843,6 +5865,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_suppyrRS
@@ -5878,6 +5901,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_suppyrRS
@@ -5913,6 +5937,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_suppyrRS
@@ -5947,6 +5972,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepaxax_to_suppyrRS
@@ -5972,6 +5998,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_suppyrRS
@@ -6002,6 +6029,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_suppyrRS
@@ -6038,6 +6066,7 @@ if (pmesg)	print "Total number: syn_num = ",syn_num,"suppyrRS_to_suppyrRS synaps
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_suppyrRS
@@ -6151,6 +6180,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_suppyrFRB
@@ -6186,6 +6216,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_suppyrFRB
@@ -6219,6 +6250,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supbask_to_suppyrFRB
@@ -6244,6 +6276,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supaxax_to_suppyrFRB
@@ -6269,6 +6302,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_suppyrFRB
@@ -6296,6 +6330,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_suppyrFRB
@@ -6331,6 +6366,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_suppyrFRB
@@ -6366,6 +6402,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_suppyrFRB
@@ -6399,6 +6436,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepaxax_to_suppyrFRB
@@ -6424,6 +6462,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_suppyrFRB
@@ -6452,6 +6491,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_suppyrFRB
@@ -6488,6 +6528,7 @@ Therefore interval = 0.4 / noisepe_cellname
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_suppyrFRB
@@ -6581,6 +6622,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_supbask
@@ -6616,6 +6658,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_supbask
@@ -6649,6 +6692,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supbask_to_supbask
@@ -6674,6 +6718,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_supbask
@@ -6700,6 +6745,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_supbask
@@ -6735,6 +6781,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_supbask
@@ -6770,6 +6817,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_supbask
@@ -6803,6 +6851,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_supbask
@@ -6831,6 +6880,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_supbask
@@ -6867,6 +6917,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_supbask
@@ -6905,6 +6956,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_supaxax
@@ -6940,6 +6992,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_supaxax
@@ -6973,6 +7026,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supbask_to_supaxax
@@ -6999,6 +7053,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_supaxax
@@ -7027,6 +7082,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_supaxax
@@ -7063,6 +7119,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_supaxax
@@ -7098,6 +7155,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_supaxax
@@ -7131,6 +7189,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_supaxax
@@ -7159,6 +7218,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_supaxax
@@ -7195,6 +7255,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_supaxax
@@ -7233,6 +7294,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_supLTS
@@ -7268,6 +7330,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_supLTS
@@ -7302,6 +7365,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supbask_to_supLTS
@@ -7328,6 +7392,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_supLTS
@@ -7355,6 +7420,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_supLTS
@@ -7390,6 +7456,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_supLTS
@@ -7426,6 +7493,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_supLTS
@@ -7459,6 +7527,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_supLTS
@@ -7487,6 +7556,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(supLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_supLTS
@@ -7525,6 +7595,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_spinstell
@@ -7561,6 +7632,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_spinstell
@@ -7595,6 +7667,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supbask_to_spinstell
@@ -7612,21 +7685,22 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 // GABA_A
 
-	gaba_weight = gGABA_supbask_to_spinstell
+	gaba_weight = gGABA_supaxax_to_spinstell
 	for postsyn_cell_num = 1, num_spinstell if (gidexist(spinstell_base+postsyn_cell_num)) { // loop over postsynaptic cells, postsyn_cell_num
-	  for i = 1, num_supbask_to_spinstell { // ith synapse on postsyn_cell_num
-	    j = map_supbask_to_spinstell.x(i,postsyn_cell_num) // j = presynaptic cell for ith syn to postsyn_cell_num
-	    k = com_supbask_to_spinstell.x(i,postsyn_cell_num) // k = compart. # in postsyn_cell_num for postsyn_cell_num's ith synapse
+	  for i = 1, num_supaxax_to_spinstell { // ith synapse on postsyn_cell_num
+	    j = map_supaxax_to_spinstell.x(i,postsyn_cell_num) // j = presynaptic cell for ith syn to postsyn_cell_num
+	    k = com_supaxax_to_spinstell.x(i,postsyn_cell_num) // k = compart. # in postsyn_cell_num for postsyn_cell_num's ith synapse
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
-	    syn_.tau = tauGABA_supbask_to_spinstell
+	    syn_.tau = tauGABA_supaxax_to_spinstell
 
 	    // connect to presynaptic cell:
         // arguments (presyn cell #     , postsyn cell #                  , synapse #                     , weight     , delay)
-	    nc_append(supbask_base + j, spinstell_base + postsyn_cell_num, postsyncell_.synlist.count()-1, gaba_weight, delay)
+	    nc_append(supaxax_base + j, spinstell_base + postsyn_cell_num, postsyncell_.synlist.count()-1, gaba_weight, delay)
 
           }
         }
@@ -7646,6 +7720,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_spinstell
@@ -7674,6 +7749,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_spinstell
@@ -7709,6 +7785,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_spinstell
@@ -7744,6 +7821,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_spinstell
@@ -7778,6 +7856,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_spinstell
@@ -7804,6 +7883,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepaxax_to_spinstell
@@ -7830,6 +7910,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_spinstell
@@ -7859,6 +7940,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_spinstell
@@ -7895,6 +7977,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(spinstell_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_spinstell
@@ -7932,6 +8015,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_tuftIB
@@ -7968,6 +8052,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_tuftIB
@@ -8002,6 +8087,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supaxax_to_tuftIB
@@ -8019,7 +8105,6 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 // Handle supLTS?!      -> tuftIB!
 
 // GABA_A
-
 	gaba_weight = gGABA_supLTS_to_tuftIB
 	for postsyn_cell_num = 1, num_tuftIB if (gidexist(tuftIB_base+postsyn_cell_num)) { // loop over postsynaptic cells, postsyn_cell_num
 	  for i = 1, num_supLTS_to_tuftIB { // ith synapse on postsyn_cell_num
@@ -8028,6 +8113,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_tuftIB
@@ -8056,6 +8142,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_tuftIB
@@ -8092,6 +8179,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_tuftIB
@@ -8110,7 +8198,6 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 	    nc_append(tuftIB_base + j, tuftIB_base + postsyn_cell_num, postsyncell_.synlist.count()-1, nmda_weight, delay)
           }
         }
-
 // ***********************************************************
 
 
@@ -8128,6 +8215,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_tuftIB
@@ -8162,6 +8250,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_tuftIB
@@ -8188,6 +8277,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepaxax_to_tuftIB
@@ -8214,6 +8304,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_tuftIB
@@ -8243,6 +8334,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_tuftIB
@@ -8279,6 +8371,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_tuftIB
@@ -8369,6 +8462,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_tuftRS
@@ -8405,6 +8499,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_tuftRS
@@ -8439,6 +8534,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supaxax_to_tuftRS
@@ -8465,6 +8561,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_tuftRS
@@ -8493,6 +8590,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_tuftRS
@@ -8529,6 +8627,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_tuftRS
@@ -8565,6 +8664,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_tuftRS
@@ -8599,6 +8699,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_tuftRS
@@ -8625,6 +8726,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepaxax_to_tuftRS
@@ -8651,6 +8753,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_tuftRS
@@ -8680,6 +8783,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_tuftRS
@@ -8716,6 +8820,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_tuftRS
@@ -8806,6 +8911,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_nontuftRS
@@ -8842,6 +8948,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_nontuftRS
@@ -8876,6 +8983,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supaxax_to_nontuftRS
@@ -8902,6 +9010,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_nontuftRS
@@ -8930,6 +9039,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_nontuftRS
@@ -8966,6 +9076,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_nontuftRS
@@ -9002,6 +9113,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_nontuftRS
@@ -9036,6 +9148,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_nontuftRS
@@ -9062,6 +9175,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepaxax_to_nontuftRS
@@ -9088,6 +9202,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_nontuftRS
@@ -9117,6 +9232,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_nontuftRS
@@ -9153,6 +9269,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_nontuftRS
@@ -9243,6 +9360,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_deepbask
@@ -9279,6 +9397,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_deepbask
@@ -9313,6 +9432,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_deepbask
@@ -9341,6 +9461,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_deepbask
@@ -9377,6 +9498,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_deepbask
@@ -9413,6 +9535,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_deepbask
@@ -9447,6 +9570,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_deepbask
@@ -9473,6 +9597,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_deepbask
@@ -9502,6 +9627,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_deepbask
@@ -9538,6 +9664,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepbask_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_deepbask
@@ -9576,6 +9703,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_deepaxax
@@ -9612,6 +9740,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_deepaxax
@@ -9646,6 +9775,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_deepaxax
@@ -9674,6 +9804,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_deepaxax
@@ -9710,6 +9841,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_deepaxax
@@ -9746,6 +9878,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_deepaxax
@@ -9780,6 +9913,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_deepaxax
@@ -9806,6 +9940,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_deepaxax
@@ -9835,6 +9970,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_deepaxax
@@ -9871,6 +10007,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepaxax_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_deepaxax
@@ -9908,6 +10045,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrRS_to_deepLTS
@@ -9944,6 +10082,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_suppyrFRB_to_deepLTS
@@ -9978,6 +10117,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_supLTS_to_deepLTS
@@ -10005,6 +10145,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_spinstell_to_deepLTS
@@ -10041,6 +10182,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftIB_to_deepLTS
@@ -10077,6 +10219,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_tuftRS_to_deepLTS
@@ -10111,6 +10254,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepbask_to_deepLTS
@@ -10137,6 +10281,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA_deepLTS_to_deepLTS
@@ -10165,6 +10310,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(deepLTS_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_deepLTS
@@ -10203,10 +10349,12 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place **TWO** GABA_A synapses in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(TCR_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA1_nRT_to_TCR
 	    // these synapses have gaba_a with two time constants
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn2_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn2_)
 	    syn2_.tau = tauGABA2_nRT_to_TCR
@@ -10237,6 +10385,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(TCR_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_TCR
@@ -10326,6 +10475,7 @@ if (pmesg) 	print "creating ",num_TCR,"NetStim's for TCR cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nRT_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_TCR_to_nRT
@@ -10360,10 +10510,12 @@ if (pmesg) 	print "creating ",num_TCR,"NetStim's for TCR cells"
 
 	    // place GABA_A synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nRT_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauGABA1_nRT_to_nRT
 	    // there are two time constants in this gaba_a synapse
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn2_ = new GABAA(0.5)
 	    postsyncell_.synlist.append(syn2_)
 	    syn2_.tau = tauGABA2_nRT_to_nRT
@@ -10392,6 +10544,7 @@ if (pmesg) 	print "creating ",num_TCR,"NetStim's for TCR cells"
 
 	    // place AMPA synapse in compartment k of postsynaptic cell postsyn_cell_num:
 	    postsyncell_ = cellobj(nRT_base+postsyn_cell_num)
+    if (!section_exists("comp", k, postsyncell_)) { continue }
 	    postsyncell_.comp[k] syn_ = new AMPA(0.5)
 	    postsyncell_.synlist.append(syn_)
 	    syn_.tau = tauAMPA_nontuftRS_to_nRT

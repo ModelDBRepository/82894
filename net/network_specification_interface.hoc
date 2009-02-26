@@ -4,7 +4,9 @@
 objref cells, nclist, netcon
 {cells = new List() nclist = new List()}
 
-func cell_append() {cells.append($o1) $o1.position($2,$3,$4)
+func cell_append() {
+	cells.append($o1)
+	$o1.position($2,$3,$4)
 	return cells.count - 1
 }
 
@@ -49,16 +51,13 @@ other examples from NetGUI's export of a NetStim hoc file (*'s removed before /'
 contain the cell templates in the style that would be written
 from network builder. */
 
-//create acell_home_ // now done in parlib.hoc
-
 // here is a template from network builder for the stimulation of cells
 
 begintemplate S_NetStim
 public pp, connect2target, x, y, z, position, is_art
-external acell_home_
 objref pp
 proc init() {
-  acell_home_ pp = new NetStim(.5)
+    pp = new NetStim(.5)
 // the interval is expected to be reset in each object instance
     pp.interval = 1e+08
 // this arbitrarily large number allows the poisson process
