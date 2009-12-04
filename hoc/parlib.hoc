@@ -175,14 +175,12 @@ proc prun() {
         runtime=startsw()
         tdat_.x[0] = pnm.pc.wait_time
         stdinit()
-if (0) {
-	if (0) {
+	if (savestatetest == 1) {
 		pnm.psolve(tstop/2)
 		savestate()
-	}else{
+	}else if (savestatetest == 2) {
 		restorestate()
 	}
-}
         pnm.psolve(tstop)
         tdat_.x[0] = pnm.pc.wait_time - tdat_.x[0]
         runtime = startsw() - runtime

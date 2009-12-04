@@ -27,6 +27,7 @@ default_var("multisplit_prefix", "cx")
 default_var("multisplit_nhost", 256)
 default_var("msoptfactor", 0.8)
 default_var("nthread", 1)
+default_var("savestatetest", 0)
 
 default_var("spike_compress", 5)
 default_var("cacheeffic", 1)  // for multisplit it is always 1
@@ -69,11 +70,11 @@ if (pc.id == 0) { print "RunTime: ", runtime }
 
 //{localloadfile("prcellstate.hoc")}
 proc pcs() {local spgid
-	spgid = thishost_gid(103)
+	spgid = thishost_gid($1)
 	if (spgid >= 0) prcellstate(load_balance_phase, spgid)
 	pc.runworker()  pc.done() quit()
 }
-//pcs()
+//pcs(103)
 
 spike2file()
 
