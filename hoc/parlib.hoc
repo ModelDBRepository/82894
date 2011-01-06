@@ -352,25 +352,10 @@ proc calculate_mechanism_complexity() {local i, j, n  localobj f, o, s
 	f = new File()
 	load_balance_ = new LoadBalance()
 	if ($1 == 1) {
-		load_balance_.ExperimentalMechComplex()
-		if (pnm.myid == 0) {
-			f.wopen("mcomplex.dat")
-			for j=0, 1 {
-				for i=0, load_balance_.m_complex_[j].size - 1 {
-					load_balance_.mt[j].select(i)
-					load_balance_.mt[j].selected(s.s)
-					f.printf("%g %s\n", load_balance_.m_complex_[j].x[i], s.s)
-				}					  
-			}
-		}
-		f.close
+		load_balance_.ExperimentalMechComplex("extracellular")
 	}else{
 		if (f.ropen("mcomplex.dat")) {
-			for j=0, 1 {
-				n = load_balance_.m_complex_[j].size
-				load_balance_.m_complex_[j].scanf(f, n)
-			}
-			f.close
+			load_balance_.read_mcomplex()
 		}
 	}
 }
