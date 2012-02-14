@@ -6584,7 +6584,7 @@ if (pmesg) 	print "creating ",num_suppyrFRB,"NetStim's for suppyrFRB cells"
 	} else {
            netstim_suppyrFRB_base = netstim_base_
 	}
-        for postsyn_cell_num = 1, num_suppyrFRB if (gidexist(suppyrFRB_base+postsyn_cell_num)) {
+        for postsyn_cell_num = 1, num_suppyrFRB {
 	if (serial) {
 	// add the PulseSyn to the cell
 	    postsyncell_ = cellobj(suppyrFRB_base+postsyn_cell_num)
@@ -8425,7 +8425,7 @@ if (pmesg) 	print "creating ",num_tuftIB,"NetStim's for tuftIB cells"
 	} else {
            netstim_tuftIB_base = netstim_base_
 	}
-        for postsyn_cell_num = 1, num_tuftIB if (gidexist(tuftIB_base+postsyn_cell_num)) {
+        for postsyn_cell_num = 1, num_tuftIB {
 	if (serial) {
 	// add the PulseSyn to the cell
 	    postsyncell_ = cellobj(tuftIB_base+postsyn_cell_num)
@@ -8873,7 +8873,7 @@ if (pmesg) 	print "creating ",num_tuftRS,"NetStim's for tuftRS cells"
         } else {
 	   netstim_tuftRS_base = netstim_base_
 	}
-        for postsyn_cell_num = 1, num_tuftRS if (gidexist(tuftRS_base+postsyn_cell_num)) {
+        for postsyn_cell_num = 1, num_tuftRS {
 	if (serial) {
 	// add the PulseSyn to the cell
 	    postsyncell_ = cellobj(tuftRS_base+postsyn_cell_num)
@@ -9323,7 +9323,7 @@ if (pmesg) 	print "creating ",num_nontuftRS,"NetStim's for nontuftRS cells"
         } else {
 	   netstim_nontuftRS_base = netstim_base_
 	}
-        for postsyn_cell_num = 1, num_nontuftRS if (gidexist(nontuftRS_base+postsyn_cell_num)) {
+        for postsyn_cell_num = 1, num_nontuftRS {
 	if (serial) {
 	// add the PulseSyn to the cell
 	    postsyncell_ = cellobj(nontuftRS_base+postsyn_cell_num)
@@ -10438,7 +10438,7 @@ if (pmesg) 	print "creating ",num_TCR,"NetStim's for TCR cells"
         } else {
 	   netstim_TCR_base = netstim_base_
 	}
-        for postsyn_cell_num = 1, num_TCR if (gidexist(TCR_base+postsyn_cell_num)) {
+        for postsyn_cell_num = 1, num_TCR {
 	if (serial) {
 	// add the PulseSyn to the cell
 	    postsyncell_ = cellobj(TCR_base+postsyn_cell_num)
