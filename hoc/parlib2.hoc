@@ -1,5 +1,6 @@
-objref netstims, netstim_netcons, netstim_randoms
+objref netstims, netstim_netcons, netstim_randoms, netstim_syns
 netstims = new List()
+netstim_syns = new List()
 netstim_netcons = new List()
 netstim_randoms = new List()
 netstim_random_seedoffset = ranseedbase + pnm.ncell // increment by number of Cells
@@ -42,6 +43,7 @@ proc par_netstim_create() {local gid  localobj cell, syn, nc, ns, r
 	if ((gid = targetcomp_exists($1, $2)) >= 0) {
 		cell = pc.gid2obj(gid)
 		cell.comp[$2] {syn = new PulseSyn(.5)}
+		netstim_syns.append(syn)
 		syn.amp = $3
 		ns = new S_NetStim()
 		ns.pp.interval = $4
