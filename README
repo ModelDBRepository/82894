@@ -5,7 +5,7 @@ sleep spindles, and epileptogenic bursts.
 See: http://senselab.med.yale.edu/senselab/modeldb/ShowModel.asp?model=45539
 
 Prepare for running with
-nrnivmod mod
+nrnivmodl mod
 
 See the comparison of each cell type with the fortran output with
 nrngui onecell.hoc
@@ -106,3 +106,6 @@ full g77 FORTRAN run (gap junctions and current stimulation present) and
 a full NEURON run with its own independent random variables
 (no "traub_exact" connection coefficients, dt = 0.025 (ms),
 secondorder = 2, and spike detection with dt resolution) is presented.
+
+Note: To start the NEURON network version use the init.hoc file in the
+appropriate way for your parallel system.
