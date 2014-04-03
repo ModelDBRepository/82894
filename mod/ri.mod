@@ -23,7 +23,7 @@ ENDCOMMENT
 NEURON { SUFFIX nothing }
 
 VERBATIM
-char* secname();
+const char* secname();
 ENDVERBATIM
 
 PROCEDURE scale_connection_coef(x, factor) {

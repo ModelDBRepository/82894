@@ -109,3 +109,7 @@ secondorder = 2, and spike detection with dt resolution) is presented.
 
 Note: To start the NEURON network version use the init.hoc file in the
 appropriate way for your parallel system.
+
+20140403 nrntraub/mod/ri.mod had char* secname(); changed to
+const char* secname(); to conform with ansi C compiler in new NEURON
+version.
