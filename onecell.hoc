@@ -89,12 +89,12 @@ proc runcell() {local i, t1,a1,t2,a2  localobj vvec, tvec, f, g
 	g = Graph[0]
 	g.erase_all
 	f = new File()
-	sprint(tstr2, "dat/%s_v_F.dat", tstr1)
+	sprint(tstr2, "dat/%s_v_F.dat", tstr1) // get FORTRAN output
 //	sprint(tstr2, "../p2c/data/GROUCHO110.%s", tstr1)
 	clipboard_retrieve(tstr2)
 	tvec = hoc_obj_[1]
 	vvec = hoc_obj_[0]
-	vvec.line(g, tvec, 2, 1)
+	vvec.line(g, tvec, 2, 1) // plot FORTRAN output in red
 	g.exec_menu("Keep Lines")
 	g.exec_menu("Keep Lines")
 	stim1 = nil
@@ -105,7 +105,7 @@ proc runcell() {local i, t1,a1,t2,a2  localobj vvec, tvec, f, g
 	stim1.amp = .3  stim2.amp = 0
 	stim1.dur = 50  stim2.dur = 1e9
 	sprint(tstr2, "cell.comp[%d].v(.5)", cell.presyn_comp)
-	g.addvar(tstr2)
+	g.addvar(tstr2) // to plot NEURON output in black
 	if (exact_) { traubexact(cell, tci) }
 }
 
