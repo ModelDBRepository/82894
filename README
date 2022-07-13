@@ -9,6 +9,7 @@ nrnivmodl mod
 
 See the comparison of each cell type with the fortran output with
 nrngui onecell.hoc
+(NEURON output plotted as black line, FORTRAN as red line)
 
 Selecting the "Exact traub style ri" which forces the NEURON connection
 coefficients to be exactly the same as computed by the Traub's equivalent
