@@ -31,8 +31,24 @@ VERBATIM {
 	Section* sec;
 	Node* nd;
 #if defined(t)
+#if defined(NRN_VERSION_GTEQ_8_2_0)
+	NrnThread* _nt = nrn_threads;
+#else /* not NRN_VERSION_GTEQ_8_2_0 */
+    /* the problem is that the elimination of _NrnThread began in 8.1.0
+       and there is no way to distinguish that from, eg, 8.0.2, except by
+       including md1redef.h again and checking defined(NRN_THREAD)
+    */
+#undef nmodl1_redef_h
+#undef nmodl2_redef_h
+#include "md1redef.h"
+#ifdef NrnThread
 	_NrnThread* _nt = nrn_threads;
+#else
+	NrnThread* _nt = nrn_threads;
 #endif
+#include "md2redef.h"
+#endif /* not NRN_VERSION_GTEQ_8_2_0 */
+#endif /* t */
 	sec = chk_access();
 	if (_lx <= 0. || _lx > 1.) {
 		hoc_execerror("out of range, must be 0 < x <= 1", (char*)0);
