@@ -28,6 +28,7 @@ default_var("multisplit_nhost", 256)
 default_var("msoptfactor", 0.8)
 default_var("nthread", 1)
 default_var("savestatetest", 0)
+default_var("coreneuron", 0)
 
 default_var("spike_compress", 5)
 default_var("cacheeffic", 1)  // for multisplit it is always 1
@@ -58,6 +59,16 @@ tstop = mytstop
 if (0) { pc.runworker()  pc.done() quit() }
 
 //{finitialize(-65) cvode_local(1) cvode.atol(1e-4)} // the finitialze avoids /0 in BREAKPOINT
+
+if (coreneuron) {
+    if (nrnpython("")) {
+        nrnpython("from neuron import coreneuron")
+        nrnpython("coreneuron.enable = True")
+        nrnpython("coreneuron.permute = 1")
+    } else {
+        execerror("coreneuron not installed")
+    }
+}
 
 prun()
 
