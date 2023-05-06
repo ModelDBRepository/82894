@@ -26,44 +26,43 @@ VERBATIM
 const char* secname();
 ENDVERBATIM
 
+VERBATIM
+#ifndef _NrnThread
+#define _NrnThread NrnThread
+#endif
+#ifdef NRN_MECHANISM_DATA_IS_SOA
+#define get_nnode(sec) _nrn_mechanism_get_nnode(sec)
+#define get_node(sec, node_index) _nrn_mechanism_get_node(sec, node_index)
+#define get_thread(node) _nrn_mechanism_get_thread(node)
+#else
+#define get_nnode(sec) sec->nnode
+#define get_node(sec, node_index) sec->pnode[node_index]
+#define get_thread(node) node->_nt
+#endif
+ENDVERBATIM
+
 PROCEDURE scale_connection_coef(x, factor) {
 VERBATIM {
 	Section* sec;
 	Node* nd;
 #if defined(t)
-#if defined(NRN_VERSION_GTEQ_8_2_0)
-	NrnThread* _nt = nrn_threads;
-#else /* not NRN_VERSION_GTEQ_8_2_0 */
-    /* the problem is that the elimination of _NrnThread began in 8.1.0
-       and there is no way to distinguish that from, eg, 8.0.2, except by
-       including md1redef.h again and checking defined(NRN_THREAD)
-    */
-#undef nmodl1_redef_h
-#undef nmodl2_redef_h
-#include "md1redef.h"
-#ifdef NrnThread
 	_NrnThread* _nt = nrn_threads;
-#else
-	NrnThread* _nt = nrn_threads;
-#endif
-#include "md2redef.h"
-#endif /* not NRN_VERSION_GTEQ_8_2_0 */
 #endif /* t */
 	sec = chk_access();
 	if (_lx <= 0. || _lx > 1.) {
 		hoc_execerror("out of range, must be 0 < x <= 1", (char*)0);
 	}
-	/*printf("scale_connection_coefs %s(%g) %d\n", secname(sec), _lx, sec->nnode);*/
+	/*printf("scale_connection_coefs %s(%g) %d\n", secname(sec), _lx, get_nnode(sec));*/
 	/* assumes 0 end of child connected to parent */
 	if (_lx == 1.) {
-		nd = sec->pnode[sec->nnode-1];
+		nd = get_node(sec, get_nnode(sec) - 1);
 	}else{
-		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
+		nd = get_node(sec, (int)(_lx*(double)(get_nnode(sec) - 1)));
 	}
+#if defined(t)        
+	_nt = get_thread(nd);
+#endif /* t */
 	/*printf("%g %g\n", NODEA(nd), NODEB(nd));*/
-#if defined(t)
-	_nt = nd->_nt;
-#endif
 	NODEA(nd) *= _lfactor;
 	NODEB(nd) *= _lfactor;
 }
