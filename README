@@ -112,4 +112,7 @@ appropriate way for your parallel system.
 
 20140403 nrntraub/mod/ri.mod had char* secname(); changed to
 const char* secname(); to conform with ansi C compiler in new NEURON
-version.
+
+20220802 nrntraub/mod/rand.mod has been removed as none of the functions
+defined there is in use. Also nrntraub/mod/ri.mod was modified to
+compile with all versions of NEURON.
