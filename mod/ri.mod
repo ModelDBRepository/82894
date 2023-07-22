@@ -27,9 +27,29 @@ const char* secname();
 ENDVERBATIM
 
 VERBATIM
-#ifndef _NrnThread
-#define _NrnThread NrnThread
-#endif
+
+#ifndef NRN_VERSION_GTEQ_8_2_0
+/* everything ok except 8.1
+   8.1 like successor versions of md1redef.h does not declare
+   NrnThread as _NrnThread via temporary #define NrnThread _NrnThread
+   but there is no direct way to know that version.
+   All previous versions of md1redef.h do have that line.
+   So must include md1redef.h again and check if NrnThread is defined.
+*/
+#undef nmodl1_redef_h /* so can include again */
+#undef nmodl2_redef_h
+#include "md1redef.h"
+#ifdef NrnThread  /* not defined in 8.1 version of md1redef.h */
+#define _NrnThread_declared
+#endif /* NrnThread */
+#include "md2redef.h"
+
+#ifdef _NrnThread_declared
+#define NrnThread _NrnThread
+#endif /* _NrnThread_declared */
+
+#endif /* version < 8.2.0 */
+
 #ifdef NRN_MECHANISM_DATA_IS_SOA
 #define get_nnode(sec) _nrn_mechanism_get_nnode(sec)
 #define get_node(sec, node_index) _nrn_mechanism_get_node(sec, node_index)
@@ -46,7 +66,7 @@ VERBATIM {
 	Section* sec;
 	Node* nd;
 #if defined(t)
-	_NrnThread* _nt = nrn_threads;
+	NrnThread* _nt = nrn_threads;
 #endif /* t */
 	sec = chk_access();
 	if (_lx <= 0. || _lx > 1.) {
